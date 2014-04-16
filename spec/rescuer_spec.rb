@@ -47,6 +47,11 @@ describe Rescuer do
 
     end
 
+    context 'when no block given' do
+      subject { lambda { Rescuer.new } }
+      it { is_expected.to raise_error(ArgumentError, 'no block given') }
+    end
+
   end
 
 end
