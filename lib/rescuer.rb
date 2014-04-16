@@ -1,7 +1,7 @@
 require 'rescuer/version'
 
 module Rescuer
-	DEFAULT_EXCEPTIONS = [StandardError]
+  DEFAULT_EXCEPTIONS = [StandardError]
 
   def new(*exceptions)
     exceptions = DEFAULT_EXCEPTIONS if exceptions.nil? || exceptions.empty?

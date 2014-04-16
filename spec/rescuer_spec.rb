@@ -39,8 +39,8 @@ describe Rescuer do
         it { is_expected.to raise_error(StandardError) }
       end
 
-      context 'when raise NoMemoryError' do
-        let(:e) { NoMemoryError.new }
+      context 'when raise SyntaxError' do
+        let(:e) { SyntaxError.new }
         subject { Rescuer.new(Exception) { raise e } }
         it { is_expected.to eq(Rescuer::Failure.new(e)) }
       end
