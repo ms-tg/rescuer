@@ -14,6 +14,16 @@ module Rescuer
   end
   module_function :new
 
-  Success = Struct.new(:value)
+  Success = Struct.new(:value) do
+    def initialize(value)
+      super(value)
+      freeze
+    end
+
+    def success?
+      true
+    end
+  end
+
   Failure = Struct.new(:cause)
 end

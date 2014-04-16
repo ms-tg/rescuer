@@ -3,6 +3,9 @@ require 'rescuer'
 
 describe Rescuer do
 
+  ##
+  # Construction indirectly by wrapping a block which may raise
+  ##
   describe '.new' do
 
     context 'when block does *not* raise' do
@@ -52,6 +55,19 @@ describe Rescuer do
       it { is_expected.to raise_error(ArgumentError, 'no block given') }
     end
 
+  end
+
+  ##
+  # Construction directly as Success
+  ##
+  describe Rescuer::Success do
+    describe '.new' do
+      context 'when any object' do
+        subject { Rescuer::Success.new(42) }
+        it { is_expected.to be_success }
+        it { is_expected.to be_frozen }
+      end
+    end
   end
 
 end
