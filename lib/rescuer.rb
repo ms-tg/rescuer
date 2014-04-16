@@ -1,10 +1,12 @@
 require 'rescuer/version'
 
 module Rescuer
+	DEFAULT_EXCEPTIONS = [StandardError]
 
-  def new
+  def new(*exceptions)
+    exceptions = DEFAULT_EXCEPTIONS if exceptions.nil? || exceptions.empty?
     Success.new(yield)
-	rescue => ex
+	rescue *exceptions => ex
     Failure.new(ex)
   end
   module_function :new

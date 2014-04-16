@@ -10,11 +10,38 @@ describe Rescuer do
       it { is_expected.to eq(Rescuer::Success.new(2)) }
     end
 
-    context 'when no arguments and block raises' do
-
+    context 'when block raises and no arguments' do
       context 'when raise StandardError' do
         let(:e) { StandardError.new('a standard error') }
         subject { Rescuer.new { raise e } }
+        it { is_expected.to eq(Rescuer::Failure.new(e)) }
+      end
+
+      context 'when raise NoMemoryError' do
+        subject { lambda { Rescuer.new { raise NoMemoryError } } }
+        it { is_expected.to raise_error(NoMemoryError) }
+      end
+    end
+
+    context 'when block raises and Exception is an argument' do
+      context 'when raise NoMemoryError' do
+        let(:e) { NoMemoryError.new }
+        subject { Rescuer.new(Exception) { raise e } }
+        it { is_expected.to eq(Rescuer::Failure.new(e)) }
+      end
+    end
+
+    context 'when block raises and two subclasses of Exception are arguments' do
+      exceptions = [NoMemoryError, SyntaxError]
+
+      context 'when raise StandardError' do
+        subject { lambda { Rescuer.new(exceptions) { raise StandardError } } }
+        it { is_expected.to raise_error(StandardError) }
+      end
+
+      context 'when raise NoMemoryError' do
+        let(:e) { NoMemoryError.new }
+        subject { Rescuer.new(Exception) { raise e } }
         it { is_expected.to eq(Rescuer::Failure.new(e)) }
       end
 
