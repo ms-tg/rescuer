@@ -100,8 +100,8 @@ describe Rescuer do
 
       describe '#failed' do
         subject { a_success.failed }
-        it { is_expected.to           be_instance_of Rescuer::Success }
-        it { expect(subject.value).to eq             TypeError.new('Success is not a Failure') }
+        it { is_expected.to               be_instance_of Rescuer::Failure }
+        it { expect(subject.exception).to eq             TypeError.new('Success is not a Failure') }
       end
     end
   end

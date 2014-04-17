@@ -37,7 +37,7 @@ module Rescuer
     end
 
     def failed
-      Success.new(TypeError.new('Success is not a Failure'))
+      Failure.new(TypeError.new('Success is not a Failure'))
     end
   end
 
