@@ -74,6 +74,15 @@ describe Rescuer do
         it { is_expected.not_to respond_to :exception }
       end
 
+      describe '#==, #eql?, #equal?, #hash' do
+        subject { a_success }
+        let(:another) { Rescuer::Success.new(the_value) }
+        it { is_expected.to          eq    another }
+        it { is_expected.to          eql   another }
+        it { is_expected.not_to      equal another }
+        it { expect(subject.hash).to eq    another.hash }
+      end
+
       describe '#value' do
         subject { a_success.value }
         it { is_expected.to be the_value}
@@ -106,6 +115,15 @@ describe Rescuer do
         it { is_expected.to     be_failure }
         it { is_expected.not_to respond_to :value }
         it { is_expected.to     respond_to :exception }
+      end
+
+      describe '#==, #eql?, #equal?, #hash' do
+        subject { a_failure }
+        let(:another) { Rescuer::Failure.new(the_error) }
+        it { is_expected.to          eq    another }
+        it { is_expected.to          eql   another }
+        it { is_expected.not_to      equal another }
+        it { expect(subject.hash).to eq    another.hash }
       end
 
       describe '#exception' do
