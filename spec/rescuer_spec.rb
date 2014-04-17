@@ -74,14 +74,19 @@ describe Rescuer do
   ##
   # Construction directly as Failure
   ##
-  describe Rescuer::Success do
+  describe Rescuer::Failure do
     describe '.new' do
-      context 'when any object' do
+      context 'when an exception' do
         let(:e) { StandardError.new('a standard error') }
         subject { Rescuer::Failure.new(e) }
         it { is_expected.to be_frozen }
         it { is_expected.not_to be_success }
         it { is_expected.to be_failure }
+      end
+
+      context 'when not an exception' do
+        subject { lambda { Rescuer::Failure.new(42) } }
+        it { is_expected.to raise_error(ArgumentError, 'not an exception') }
       end
     end
   end
