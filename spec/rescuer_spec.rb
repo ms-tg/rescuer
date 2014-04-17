@@ -83,6 +83,11 @@ describe Rescuer do
         subject { a_success.get }
         it { is_expected.to be the_value }
       end
+
+      describe '#get_or_else' do
+        subject { a_success.get_or_else(123) }
+        it { is_expected.to be the_value }
+      end
     end
   end
 
@@ -111,6 +116,11 @@ describe Rescuer do
       describe '#get' do
         subject { lambda { a_failure.get } }
         it { is_expected.to raise_error(the_error) }
+      end
+
+      describe '#get_or_else' do
+        subject { a_failure.get_or_else(123) }
+        it { is_expected.to be 123 }
       end
     end
 

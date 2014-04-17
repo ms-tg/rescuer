@@ -31,6 +31,10 @@ module Rescuer
     def get
       value
     end
+
+    def get_or_else(_)
+      value
+    end
   end
 
   Failure = Struct.new(:exception) do
@@ -50,6 +54,10 @@ module Rescuer
 
     def get
       raise exception
+    end
+
+    def get_or_else(default)
+      default
     end
   end
 end
