@@ -36,6 +36,10 @@ module Rescuer
       value
     end
 
+    def or_else(_)
+      self
+    end
+
     def failed
       Failure.new(TypeError.new('Success is not a Failure'))
     end
@@ -74,6 +78,10 @@ module Rescuer
 
     def get_or_else(default)
       default
+    end
+
+    def or_else(other)
+      other
     end
 
     def failed

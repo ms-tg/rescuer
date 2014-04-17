@@ -98,6 +98,12 @@ describe Rescuer do
         it { is_expected.to be the_value }
       end
 
+      describe '#or_else' do
+        let(:another) { Rescuer::Success.new(123) }
+        subject { a_success.or_else(another) }
+        it { is_expected.to be a_success }
+      end
+
       describe '#failed' do
         subject { a_success.failed }
         it { is_expected.to               be_instance_of Rescuer::Failure }
@@ -208,6 +214,12 @@ describe Rescuer do
       describe '#get_or_else' do
         subject { a_failure.get_or_else(123) }
         it { is_expected.to be 123 }
+      end
+
+      describe '#or_else' do
+        let(:another) { Rescuer::Success.new(123) }
+        subject { a_failure.or_else(another) }
+        it { is_expected.to be another }
       end
 
       describe '#failed' do
