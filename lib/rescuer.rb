@@ -49,6 +49,18 @@ module Rescuer
       self
     end
 
+    def map
+      new_value = yield value
+      Success.new(new_value)
+    end
+
+    def flat_map
+      new_value = yield value
+      raise ArgumentError, 'block did not return Success or Failure' unless
+          new_value.is_a?(Success) || new_value.is_a?(Failure)
+      new_value
+    end
+
     def flatten(depth = nil)
       raise ArgumentError, 'invalid depth' unless depth.nil? || (depth.is_a?(Integer) && depth >= 0)
       if depth && depth.zero?
@@ -94,6 +106,14 @@ module Rescuer
     end
 
     def each
+      self
+    end
+
+    def map
+      self
+    end
+
+    def flat_map
       self
     end
 

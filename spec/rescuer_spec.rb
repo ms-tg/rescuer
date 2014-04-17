@@ -117,6 +117,16 @@ describe Rescuer do
         it { expect(acc).to eq [the_value] }
       end
 
+      describe '#map' do
+        subject { a_success.map { |v| v + 1 } }
+        it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+      end
+
+      describe '#flat_map' do
+        subject { a_success.flat_map { |v| Rescuer::Success.new(v + 1) } }
+        it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+      end
+
       describe '#flatten' do
         let(:nested_once)  { Rescuer::Success.new(a_success)   }
         let(:nested_twice) { Rescuer::Success.new(nested_once) }
@@ -240,6 +250,16 @@ describe Rescuer do
         subject { dummy = []; a_failure.each { |v| dummy << v } }
         it { is_expected.to be a_failure }
         it { expect(acc).to eq [] }
+      end
+
+      describe '#map' do
+        subject { a_failure.map { |v| v + 1 } }
+        it { is_expected.to be a_failure }
+      end
+
+      describe '#flat_map' do
+        subject { a_failure.flat_map { |v| Rescuer::Success.new(v + 1) } }
+        it { is_expected.to be a_failure }
       end
 
       describe '#flatten' do
