@@ -23,7 +23,24 @@ module Rescuer
     def success?
       true
     end
+
+    def failure?
+      false
+    end
   end
 
-  Failure = Struct.new(:cause)
+  Failure = Struct.new(:exception) do
+    def initialize(value)
+      super(value)
+      freeze
+    end
+
+    def success?
+      false
+    end
+
+    def failure?
+      true
+    end
+  end
 end
