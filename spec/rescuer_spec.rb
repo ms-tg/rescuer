@@ -183,6 +183,40 @@ describe Rescuer do
         end
       end
 
+      shared_examples 'select methods' do
+        context 'when predicate returns true' do
+          subject { select_method { |v| v == the_value } }
+          it { is_expected.to be a_success }
+        end
+
+        context 'when predicate returns false' do
+          let(:the_error) { IndexError.new('predicate does not hold for 42') }
+          subject { select_method { |v| v != the_value } }
+          it { is_expected.to eq Rescuer::Failure.new(the_error) }
+        end
+
+        context 'when predicate raises an exception that is to be rescued' do
+          let(:the_error) { StandardError.new('a standard error') }
+          subject { select_method { |_| raise the_error } }
+          it { is_expected.to eq Rescuer::Failure.new(the_error) }
+        end
+
+        context 'when predicate raises an exception that is *not* to be rescued' do
+          subject { lambda { select_method { |_| raise NoMemoryError } } }
+          it { is_expected.to raise_error(NoMemoryError) }
+        end
+      end
+
+      describe '#select' do
+        def select_method; a_success.select { |v| yield v }; end
+        it_behaves_like 'select methods'
+      end
+
+      describe '#find_all' do
+        def select_method; a_success.find_all { |v| yield v }; end
+        it_behaves_like 'select methods'
+      end
+
       describe '#flatten' do
         let(:nested_once)  { Rescuer::Success.new(a_success)   }
         let(:nested_twice) { Rescuer::Success.new(nested_once) }

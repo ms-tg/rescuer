@@ -6,18 +6,15 @@ module Rescuer
   def new(*exceptions)
     raise ArgumentError, 'no block given' unless block_given?
 
-    exceptions_to_rescue, exceptions_to_pass =
-      if exceptions.nil? || exceptions.empty?
-        [DEFAULT_EXCEPTIONS_TO_RESCUE, nil]
-      else
-        [exceptions.flatten, exceptions.flatten]
-      end
+    passed = exceptions && exceptions.flatten.compact
+    to_rescue, to_pass =
+      if passed.nil? || passed.empty? then [DEFAULT_EXCEPTIONS_TO_RESCUE, nil] else [passed, passed] end
 
     begin
       value = yield
-      Success.new(value, exceptions_to_pass)
-	  rescue *exceptions_to_rescue => error
-      Failure.new(error, exceptions_to_pass)
+      Success.new(value, to_pass)
+	  rescue *to_rescue => error
+      Failure.new(error, to_pass)
     end
   end
   module_function :new
@@ -67,6 +64,14 @@ module Rescuer
       yield value
       self
     end
+
+    def select
+      flat_map do |v|
+        predicate = yield v
+        if predicate then self else Failure.new(IndexError.new("predicate does not hold for #{v}")) end
+      end
+    end
+    alias_method :find_all, :select
 
     def flatten(depth = nil)
       raise ArgumentError, 'invalid depth' unless depth.nil? || (depth.is_a?(Integer) && depth >= 0)
