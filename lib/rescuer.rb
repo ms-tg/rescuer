@@ -44,21 +44,23 @@ module Rescuer
       Failure.new(TypeError.new('Success is not a Failure'))
     end
 
-    def each
-      yield value
-      self
-    end
-
-    def map
-      new_value = yield value
-      Success.new(new_value)
-    end
-
     def flat_map
       new_value = yield value
       raise ArgumentError, 'block did not return Success or Failure' unless
           new_value.is_a?(Success) || new_value.is_a?(Failure)
       new_value
+    end
+
+    def map
+      flat_map do |v|
+        new_value = yield v
+        Success.new(new_value)
+      end
+    end
+
+    def each
+      map { |v| yield v }
+      self
     end
 
     def flatten(depth = nil)
@@ -105,7 +107,7 @@ module Rescuer
       Success.new(exception)
     end
 
-    def each
+    def flat_map
       self
     end
 
@@ -113,7 +115,7 @@ module Rescuer
       self
     end
 
-    def flat_map
+    def each
       self
     end
 
