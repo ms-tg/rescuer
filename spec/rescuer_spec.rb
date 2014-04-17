@@ -125,10 +125,18 @@ describe Rescuer do
       end
 
       describe '#each' do
-        let(:acc) { arr = []; a_success.each { |v| arr << v }; arr }
-        subject { dummy = []; a_success.each { |v| dummy << v } }
-        it { is_expected.to be a_success }
-        it { expect(acc).to eq [the_value] }
+        context 'when block does *not* raise' do
+          let(:acc) { arr = []; a_success.each { |v| arr << v }; arr }
+          subject { dummy = []; a_success.each { |v| dummy << v } }
+          it { is_expected.to be a_success }
+          it { expect(acc).to eq [the_value] }
+        end
+
+        context 'when block raises' do
+          let(:the_error) { StandardError.new('a standard error') }
+          subject { lambda { a_success.each { |_| raise the_error } } }
+          it { is_expected.to raise_error(the_error) }
+        end
       end
 
       describe '#map' do

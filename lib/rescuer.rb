@@ -64,7 +64,7 @@ module Rescuer
     end
 
     def each
-      map { |v| yield v }
+      yield value
       self
     end
 
