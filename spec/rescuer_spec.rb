@@ -371,6 +371,33 @@ describe Rescuer do
         it { is_expected.to be a_failure }
       end
 
+      shared_examples 'select methods' do
+        context 'when predicate returns true' do
+          subject { select_method { |v| v == the_value } }
+          it { is_expected.to be a_failure }
+        end
+
+        context 'when predicate returns false' do
+          subject { select_method { |v| v != the_value } }
+          it { is_expected.to be a_failure }
+        end
+
+        context 'when predicate raises any exception' do
+          subject { select_method { |_| raise the_error } }
+          it { is_expected.to be a_failure }
+        end
+      end
+
+      describe '#select' do
+        def select_method; a_failure.select { |v| yield v }; end
+        it_behaves_like 'select methods'
+      end
+
+      describe '#find_all' do
+        def select_method; a_failure.find_all { |v| yield v }; end
+        it_behaves_like 'select methods'
+      end
+
       describe '#transform' do
         subject { a_failure.transform(lambda { |v| Rescuer::Success.new(v + 1) },
                                       lambda { |e| Rescuer::Success.new(e.message.length) }) }

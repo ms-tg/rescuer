@@ -133,6 +133,11 @@ module Rescuer
       self
     end
 
+    def select
+      self
+    end
+    alias_method :find_all, :select
+
     def transform(f_success, f_failure)
       failed.flat_map { |e| f_failure.call(e) }
     end
