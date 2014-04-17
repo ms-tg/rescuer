@@ -217,6 +217,12 @@ describe Rescuer do
         it_behaves_like 'select methods'
       end
 
+      describe '#transform' do
+        subject { a_success.transform(lambda { |v| Rescuer::Success.new(v + 1) },
+                                      lambda { |e| Rescuer::Success.new(e.message.length) }) }
+        it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+      end
+
       describe '#flatten' do
         let(:nested_once)  { Rescuer::Success.new(a_success)   }
         let(:nested_twice) { Rescuer::Success.new(nested_once) }
@@ -363,6 +369,12 @@ describe Rescuer do
       describe '#flat_map' do
         subject { a_failure.flat_map { |v| Rescuer::Success.new(v + 1) } }
         it { is_expected.to be a_failure }
+      end
+
+      describe '#transform' do
+        subject { a_failure.transform(lambda { |v| Rescuer::Success.new(v + 1) },
+                                      lambda { |e| Rescuer::Success.new(e.message.length) }) }
+        it { is_expected.to eq Rescuer::Success.new(the_error.message.length) }
       end
 
       describe '#flatten' do

@@ -73,6 +73,10 @@ module Rescuer
     end
     alias_method :find_all, :select
 
+    def transform(f_success, f_failure)
+      flat_map { |v| f_success.call(v) }
+    end
+
     def flatten(depth = nil)
       raise ArgumentError, 'invalid depth' unless depth.nil? || (depth.is_a?(Integer) && depth >= 0)
       if depth && depth.zero?
@@ -127,6 +131,10 @@ module Rescuer
 
     def each
       self
+    end
+
+    def transform(f_success, f_failure)
+      failed.flat_map { |e| f_failure.call(e) }
     end
 
     def flatten(depth = nil)
