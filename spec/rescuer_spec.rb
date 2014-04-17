@@ -97,6 +97,12 @@ describe Rescuer do
         subject { a_success.get_or_else(123) }
         it { is_expected.to be the_value }
       end
+
+      describe '#failed' do
+        subject { a_success.failed }
+        it { is_expected.to           be_instance_of Rescuer::Success }
+        it { expect(subject.value).to eq             TypeError.new('Success is not a Failure') }
+      end
     end
   end
 
@@ -139,6 +145,12 @@ describe Rescuer do
       describe '#get_or_else' do
         subject { a_failure.get_or_else(123) }
         it { is_expected.to be 123 }
+      end
+
+      describe '#failed' do
+        subject { a_failure.failed }
+        it { is_expected.to           be_instance_of Rescuer::Success }
+        it { expect(subject.value).to be             the_error }
       end
     end
 

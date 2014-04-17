@@ -35,6 +35,10 @@ module Rescuer
     def get_or_else(_)
       value
     end
+
+    def failed
+      Success.new(TypeError.new('Success is not a Failure'))
+    end
   end
 
   Failure = Struct.new(:exception) do
@@ -58,6 +62,10 @@ module Rescuer
 
     def get_or_else(default)
       default
+    end
+
+    def failed
+      Success.new(exception)
     end
   end
 end
