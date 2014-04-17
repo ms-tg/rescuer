@@ -2,6 +2,7 @@
 *.rbc
 /.config
 /.idea
+/*.iml
 /coverage/
 /InstalledFiles
 /pkg/
