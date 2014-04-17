@@ -27,12 +27,16 @@ module Rescuer
     def failure?
       false
     end
+
+    def get
+      value
+    end
   end
 
   Failure = Struct.new(:exception) do
-    def initialize(value)
-      super(value)
-      raise ArgumentError, 'not an exception' unless value.is_a? Exception
+    def initialize(exception)
+      super(exception)
+      raise ArgumentError, 'not an exception' unless exception.is_a? Exception
       freeze
     end
 
@@ -42,6 +46,10 @@ module Rescuer
 
     def failure?
       true
+    end
+
+    def get
+      raise exception
     end
   end
 end

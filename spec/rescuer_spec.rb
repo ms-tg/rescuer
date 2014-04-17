@@ -78,6 +78,11 @@ describe Rescuer do
         subject { a_success.value }
         it { is_expected.to be the_value}
       end
+
+      describe '#get' do
+        subject { a_success.get }
+        it { is_expected.to be the_value }
+      end
     end
   end
 
@@ -101,6 +106,11 @@ describe Rescuer do
       describe '#exception' do
         subject { a_failure.exception }
         it { is_expected.to be the_error }
+      end
+
+      describe '#get' do
+        subject { lambda { a_failure.get } }
+        it { is_expected.to raise_error(the_error) }
       end
     end
 
