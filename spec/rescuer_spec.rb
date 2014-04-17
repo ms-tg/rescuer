@@ -103,6 +103,69 @@ describe Rescuer do
         it { is_expected.to               be_instance_of Rescuer::Failure }
         it { expect(subject.exception).to eq             TypeError.new('Success is not a Failure') }
       end
+
+      describe '#flatten' do
+        let(:nested_once)  { Rescuer::Success.new(a_success)   }
+        let(:nested_twice) { Rescuer::Success.new(nested_once) }
+        let(:nested_fail)  { Rescuer::Success.new(Rescuer::Failure.new(StandardError.new('a standard error'))) }
+
+        context 'given an invalid depth' do
+          let(:string_depth)   { lambda { a_success.flatten('hey!') } }
+          let(:negative_depth) { lambda { a_success.flatten(-1)     } }
+          let(:float_depth)    { lambda { a_success.flatten(1.23)   } }
+          it { expect(string_depth).to   raise_error(ArgumentError, 'invalid depth') }
+          it { expect(negative_depth).to raise_error(ArgumentError, 'invalid depth') }
+          it { expect(float_depth).to    raise_error(ArgumentError, 'invalid depth') }
+        end
+
+        context 'when *not* nested' do
+          context 'given depth is nil' do
+            subject { a_success.flatten }
+            it { is_expected.to be a_success }
+          end
+
+          context 'given depth = 1' do
+            subject { a_success.flatten(1) }
+            it { is_expected.to be a_success }
+          end
+        end
+
+        context 'when nested success containing success' do
+          context 'given depth is nil' do
+            subject { nested_once.flatten }
+            it { is_expected.to be a_success }
+          end
+
+          context 'given depth = 1' do
+            subject { nested_once.flatten(1) }
+            it { is_expected.to be a_success }
+          end
+        end
+
+        context 'when nested success containing success containing success' do
+          context 'given depth is nil' do
+            subject { nested_twice.flatten }
+            it { is_expected.to be a_success }
+          end
+
+          context 'given depth = 1' do
+            subject { nested_twice.flatten(1) }
+            it { is_expected.to be nested_once }
+          end
+        end
+
+        context 'when nested success containing failure' do
+          context 'given depth is nil' do
+            subject { nested_fail.flatten }
+            it { is_expected.to be nested_fail.value }
+          end
+
+          context 'given depth = 1' do
+            subject { nested_fail.flatten(1) }
+            it { is_expected.to be nested_fail.value }
+          end
+        end
+      end
     end
   end
 
@@ -151,6 +214,18 @@ describe Rescuer do
         subject { a_failure.failed }
         it { is_expected.to           be_instance_of Rescuer::Success }
         it { expect(subject.value).to be             the_error }
+      end
+
+      describe '#flatten' do
+        context 'given depth is nil' do
+          subject { a_failure.flatten }
+          it { is_expected.to be a_failure }
+        end
+
+        context 'given depth = 1' do
+          subject { a_failure.flatten(1) }
+          it { is_expected.to be a_failure }
+        end
       end
     end
 

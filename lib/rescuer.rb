@@ -39,6 +39,18 @@ module Rescuer
     def failed
       Failure.new(TypeError.new('Success is not a Failure'))
     end
+
+    def flatten(depth = nil)
+      raise ArgumentError, 'invalid depth' unless depth.nil? || (depth.is_a?(Integer) && depth >= 0)
+      if depth && depth.zero?
+        self
+      else
+        case value
+        when Success, Failure then value.flatten(depth && depth - 1)
+        else self
+        end
+      end
+    end
   end
 
   Failure = Struct.new(:exception) do
@@ -66,6 +78,10 @@ module Rescuer
 
     def failed
       Success.new(exception)
+    end
+
+    def flatten(depth = nil)
+      self
     end
   end
 end
