@@ -61,16 +61,22 @@ describe Rescuer do
   # Construction directly as Success
   ##
   describe Rescuer::Success do
-    describe '.new' do
-      context 'when any object' do
-        subject { Rescuer::Success.new(42) }
+    context 'when given any object' do
+      let(:the_value) { 42 }
+      let(:a_success) { Rescuer::Success.new(the_value) }
 
-        it { is_expected.to     be_frozen  }
+      describe '.new' do
+        subject { a_success }
+        it { is_expected.to     be_frozen }
         it { is_expected.to     be_success }
         it { is_expected.not_to be_failure }
+        it { is_expected.to     respond_to :value }
+        it { is_expected.not_to respond_to :exception }
+      end
 
-        it { expect(subject.value).to be 42 }
-        it { expect(subject.respond_to? :exception).to be false }
+      describe '#value' do
+        subject { a_success.value }
+        it { is_expected.to be the_value}
       end
     end
   end
@@ -79,20 +85,27 @@ describe Rescuer do
   # Construction directly as Failure
   ##
   describe Rescuer::Failure do
-    describe '.new' do
-      context 'when an exception' do
-        let(:e) { StandardError.new('a standard error') }
-        subject { Rescuer::Failure.new(e) }
+    context 'when given an exception' do
+      let(:the_error) { StandardError.new('a standard error') }
+      let(:a_failure) { Rescuer::Failure.new(the_error) }
 
-        it { is_expected.to     be_frozen  }
+      describe '.new' do
+        subject { a_failure }
+        it { is_expected.to     be_frozen }
         it { is_expected.not_to be_success }
         it { is_expected.to     be_failure }
-
-        it { expect(subject.respond_to? :value).to be false }
-        it { expect(subject.exception).to be e }
+        it { is_expected.not_to respond_to :value }
+        it { is_expected.to     respond_to :exception }
       end
 
-      context 'when not an exception' do
+      describe '#exception' do
+        subject { a_failure.exception }
+        it { is_expected.to be the_error }
+      end
+    end
+
+    context 'when given a *non*-exception' do
+      describe '.new' do
         subject { lambda { Rescuer::Failure.new(42) } }
         it { is_expected.to raise_error(ArgumentError, 'not an exception') }
       end
