@@ -44,6 +44,11 @@ module Rescuer
       Failure.new(TypeError.new('Success is not a Failure'))
     end
 
+    def each
+      yield value
+      self
+    end
+
     def flatten(depth = nil)
       raise ArgumentError, 'invalid depth' unless depth.nil? || (depth.is_a?(Integer) && depth >= 0)
       if depth && depth.zero?
@@ -86,6 +91,10 @@ module Rescuer
 
     def failed
       Success.new(exception)
+    end
+
+    def each
+      self
     end
 
     def flatten(depth = nil)

@@ -110,6 +110,13 @@ describe Rescuer do
         it { expect(subject.exception).to eq             TypeError.new('Success is not a Failure') }
       end
 
+      describe '#each' do
+        let(:acc) { arr = []; a_success.each { |v| arr << v }; arr }
+        subject { dummy = []; a_success.each { |v| dummy << v } }
+        it { is_expected.to be a_success }
+        it { expect(acc).to eq [the_value] }
+      end
+
       describe '#flatten' do
         let(:nested_once)  { Rescuer::Success.new(a_success)   }
         let(:nested_twice) { Rescuer::Success.new(nested_once) }
@@ -226,6 +233,13 @@ describe Rescuer do
         subject { a_failure.failed }
         it { is_expected.to           be_instance_of Rescuer::Success }
         it { expect(subject.value).to be             the_error }
+      end
+
+      describe '#each' do
+        let(:acc) { arr = []; a_failure.each { |v| arr << v }; arr }
+        subject { dummy = []; a_failure.each { |v| dummy << v } }
+        it { is_expected.to be a_failure }
+        it { expect(acc).to eq [] }
       end
 
       describe '#flatten' do
