@@ -3,20 +3,28 @@ require 'rescuer/version'
 module Rescuer
   DEFAULT_EXCEPTIONS_TO_RESCUE = [StandardError]
 
-  def new(*exceptions_to_rescue)
-    exceptions_to_rescue = DEFAULT_EXCEPTIONS_TO_RESCUE if exceptions_to_rescue.nil? || exceptions_to_rescue.empty?
+  def new(*exceptions)
     raise ArgumentError, 'no block given' unless block_given?
+
+    exceptions_to_rescue, exceptions_to_pass =
+      if exceptions.nil? || exceptions.empty?
+        [DEFAULT_EXCEPTIONS_TO_RESCUE, nil]
+      else
+        [exceptions.flatten, exceptions.flatten]
+      end
+
     begin
-      Success.new(yield)
-	  rescue *exceptions_to_rescue => ex
-      Failure.new(ex)
+      value = yield
+      Success.new(value, exceptions_to_pass)
+	  rescue *exceptions_to_rescue => error
+      Failure.new(error, exceptions_to_pass)
     end
   end
   module_function :new
 
-  Success = Struct.new(:value) do
-    def initialize(value)
-      super(value)
+  Success = Struct.new(:value, :exceptions_to_rescue) do
+    def initialize(value, exceptions_to_rescue = nil)
+      super(value, exceptions_to_rescue)
       freeze
     end
 
@@ -45,10 +53,7 @@ module Rescuer
     end
 
     def flat_map
-      new_value = yield value
-      raise ArgumentError, 'block did not return Success or Failure' unless
-          new_value.is_a?(Success) || new_value.is_a?(Failure)
-      new_value
+      Rescuer.new(exceptions_to_rescue) { yield value }.flatten(1)
     end
 
     def map
@@ -76,9 +81,9 @@ module Rescuer
     end
   end
 
-  Failure = Struct.new(:exception) do
-    def initialize(exception)
-      super(exception)
+  Failure = Struct.new(:exception, :exceptions_to_rescue) do
+    def initialize(exception, exceptions_to_rescue = nil)
+      super(exception, exceptions_to_rescue)
       raise ArgumentError, 'not an exception' unless exception.is_a? Exception
       freeze
     end

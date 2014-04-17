@@ -4,7 +4,7 @@ require 'rescuer'
 describe Rescuer do
 
   ##
-  # Construction indirectly by wrapping a block which may raise
+  # Construct indirectly by wrapping a block which may raise an exception
   ##
   describe '.new' do
 
@@ -30,7 +30,7 @@ describe Rescuer do
       context 'when raise NoMemoryError' do
         let(:e) { NoMemoryError.new }
         subject { Rescuer.new(Exception) { raise e } }
-        it { is_expected.to eq(Rescuer::Failure.new(e)) }
+        it { is_expected.to eq(Rescuer::Failure.new(e, [Exception])) }
       end
     end
 
@@ -44,8 +44,8 @@ describe Rescuer do
 
       context 'when raise SyntaxError' do
         let(:e) { SyntaxError.new }
-        subject { Rescuer.new(Exception) { raise e } }
-        it { is_expected.to eq(Rescuer::Failure.new(e)) }
+        subject { Rescuer.new(exceptions) { raise e } }
+        it { is_expected.to eq(Rescuer::Failure.new(e, exceptions)) }
       end
 
     end
@@ -58,7 +58,7 @@ describe Rescuer do
   end
 
   ##
-  # Construction directly as Success
+  # Construct directly as Success
   ##
   describe Rescuer::Success do
     context 'when given any object' do
@@ -71,6 +71,7 @@ describe Rescuer do
         it { is_expected.to     be_success }
         it { is_expected.not_to be_failure }
         it { is_expected.to     respond_to :value }
+        it { is_expected.to     respond_to :exceptions_to_rescue }
         it { is_expected.not_to respond_to :exception }
       end
 
@@ -86,6 +87,19 @@ describe Rescuer do
       describe '#value' do
         subject { a_success.value }
         it { is_expected.to be the_value}
+      end
+
+      describe '#exceptions_to_rescue' do
+        context 'when not given' do
+          subject { a_success.exceptions_to_rescue }
+          it { is_expected.to be_nil }
+        end
+
+        context 'when given' do
+          let(:ex_to_rescue) { [ArgumentError, TypeError] }
+          subject { Rescuer::Success.new(the_value, ex_to_rescue).exceptions_to_rescue }
+          it { is_expected.to be ex_to_rescue }
+        end
       end
 
       describe '#get' do
@@ -123,8 +137,26 @@ describe Rescuer do
       end
 
       describe '#flat_map' do
-        subject { a_success.flat_map { |v| Rescuer::Success.new(v + 1) } }
-        it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+        context 'when block returns a Success' do
+          subject { a_success.flat_map { |v| Rescuer::Success.new(v + 1) } }
+          it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+        end
+
+        context 'when block raises an exception that is to be rescued' do
+          let(:to_rescue) { [ArgumentError] }
+          let(:the_error) { ArgumentError.new('an error to be rescued') }
+          let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
+          subject { a_success_rescuing_ae.flat_map { |_| raise the_error } }
+          it { is_expected.to eq Rescuer::Failure.new(the_error, to_rescue) }
+        end
+
+        context 'when block raises an exception that is *not* to be rescued' do
+          let(:to_rescue) { [ArgumentError] }
+          let(:the_error) { StandardError.new('a standard error') }
+          let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
+          subject { lambda { a_success_rescuing_ae.flat_map { |_| raise the_error } } }
+          it { is_expected.to raise_error(the_error) }
+        end
       end
 
       describe '#flatten' do
@@ -193,7 +225,7 @@ describe Rescuer do
   end
 
   ##
-  # Construction directly as Failure
+  # Construct directly as Failure
   ##
   describe Rescuer::Failure do
     context 'when given an exception' do
@@ -221,6 +253,19 @@ describe Rescuer do
       describe '#exception' do
         subject { a_failure.exception }
         it { is_expected.to be the_error }
+      end
+
+      describe '#exceptions_to_rescue' do
+        context 'when not given' do
+          subject { a_failure.exceptions_to_rescue }
+          it { is_expected.to be_nil }
+        end
+
+        context 'when given' do
+          let(:ex_to_rescue) { [ArgumentError, TypeError] }
+          subject { Rescuer::Failure.new(the_error, ex_to_rescue).exceptions_to_rescue }
+          it { is_expected.to be ex_to_rescue }
+        end
       end
 
       describe '#get' do
