@@ -132,28 +132,44 @@ describe Rescuer do
       end
 
       describe '#map' do
-        subject { a_success.map { |v| v + 1 } }
-        it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+        let(:to_rescue) { [ArgumentError] }
+        let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
+
+        context 'when block returns a value' do
+          subject { a_success.map { |v| v + 1 } }
+          it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
+        end
+
+        context 'when block raises an exception that is to be rescued' do
+          let(:the_error) { ArgumentError.new('an error to be rescued') }
+          subject { a_success_rescuing_ae.map { |_| raise the_error } }
+          it { is_expected.to eq Rescuer::Failure.new(the_error, to_rescue) }
+        end
+
+        context 'when block raises an exception that is *not* to be rescued' do
+          let(:the_error) { StandardError.new('a standard error') }
+          subject { lambda { a_success_rescuing_ae.map { |_| raise the_error } } }
+          it { is_expected.to raise_error(the_error) }
+        end
       end
 
       describe '#flat_map' do
+        let(:to_rescue) { [ArgumentError] }
+        let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
+
         context 'when block returns a Success' do
           subject { a_success.flat_map { |v| Rescuer::Success.new(v + 1) } }
           it { is_expected.to eq Rescuer::Success.new(the_value + 1) }
         end
 
         context 'when block raises an exception that is to be rescued' do
-          let(:to_rescue) { [ArgumentError] }
           let(:the_error) { ArgumentError.new('an error to be rescued') }
-          let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
           subject { a_success_rescuing_ae.flat_map { |_| raise the_error } }
           it { is_expected.to eq Rescuer::Failure.new(the_error, to_rescue) }
         end
 
         context 'when block raises an exception that is *not* to be rescued' do
-          let(:to_rescue) { [ArgumentError] }
           let(:the_error) { StandardError.new('a standard error') }
-          let(:a_success_rescuing_ae) { Rescuer::Success.new(the_value, to_rescue) }
           subject { lambda { a_success_rescuing_ae.flat_map { |_| raise the_error } } }
           it { is_expected.to raise_error(the_error) }
         end
